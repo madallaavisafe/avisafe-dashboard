@@ -1,12 +1,9 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AVISAFE - Tabela de Leituras</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <title>AVISAFE - Histórico</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -30,58 +27,68 @@
     th {
       background-color: #e0e0e0;
     }
+    .table-container {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
   <h1>AVISAFE - Histórico de Leituras</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Hora</th>
-        <th>Temperatura (ºC)</th>
-        <th>Umidade (%)</th>
-        <th>AR (Qualidade)</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaLeituras">
-      <tr><td colspan="5">Carregando...</td></tr>
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Hora</th>
+          <th>Temperatura (ºC)</th>
+          <th>Umidade (%)</th>
+          <th>AR (Qualidade)</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-dados">
+        <!-- Dados serão inseridos aqui -->
+      </tbody>
+    </table>
+  </div>
 
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
   <script>
+    // Configuração do Firebase
     const firebaseConfig = {
-      databaseURL: "https://avisafe-2e8ad-default-rtdb.firebaseio.com/"
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_PROJETO.firebaseio.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "000000000000",
+      appId: "1:000000000000:web:xxxxxxxxxxxx"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
 
-    const tabela = document.getElementById("tabelaLeituras");
+    const tabela = document.getElementById("tabela-dados");
 
-    db.ref("/avisafe/historico").limitToLast(20).on("value", (snap) => {
-      const dados = snap.val();
-      let html = "";
-      if (!dados) {
-        tabela.innerHTML = "<tr><td colspan='5'>Sem dados</td></tr>";
-        return;
-      }
-      const chavesOrdenadas = Object.keys(dados).sort().reverse();
-      chavesOrdenadas.forEach((key) => {
-        const item = dados[key];
-        const data = key.substring(0, 10);
-        const hora = key.substring(11, 13) + ":" + key.substring(13, 15) + ":" + key.substring(15, 17);
-        html += `
-          <tr>
-            <td>${data}</td>
-            <td>${hora}</td>
-            <td>${item.temperatura ?? '--'}</td>
-            <td>${item.umidade ?? '--'}</td>
-            <td>${item.qualidade_texto ?? '--'} (${item.qualidade_valor ?? '--'})</td>
-          </tr>
+    firebase.database().ref("avisafe/historico").once("value", (snapshot) => {
+      const dados = snapshot.val();
+      const registros = Object.values(dados || {});
+
+      // Ordenar por timestamp se quiser
+      registros.sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1));
+
+      registros.forEach(item => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${item.data}</td>
+          <td>${item.hora}</td>
+          <td>${item.temperatura}</td>
+          <td>${item.umidade}</td>
+          <td>${item.ar}</td>
         `;
+        tabela.appendChild(linha);
       });
-      tabela.innerHTML = html;
     });
   </script>
 </body>
