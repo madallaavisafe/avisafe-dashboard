@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AVISAFE - Histórico</title>
+  <title>AVISAFE - Tabela de Leituras</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,33 +30,25 @@
     th {
       background-color: #e0e0e0;
     }
-    .table-container {
-      max-height: 70vh;
-      overflow-y: auto;
-    }
   </style>
 </head>
 <body>
   <h1>AVISAFE - Histórico de Leituras</h1>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Hora</th>
-          <th>Temperatura (ºC)</th>
-          <th>Umidade (%)</th>
-          <th>AR (Qualidade)</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaLeituras">
-        <tr><td colspan="5">Carregando...</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Hora</th>
+        <th>Temperatura (ºC)</th>
+        <th>Umidade (%)</th>
+        <th>AR (Qualidade)</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaLeituras">
+      <tr><td colspan="5">Carregando...</td></tr>
+    </tbody>
+  </table>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
   <script>
     const firebaseConfig = {
       databaseURL: "https://avisafe-2e8ad-default-rtdb.firebaseio.com/"
@@ -61,6 +56,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
     const tabela = document.getElementById("tabelaLeituras");
 
     db.ref("/avisafe/historico").on("value", (snap) => {
@@ -70,9 +66,7 @@
         tabela.innerHTML = "<tr><td colspan='5'>Sem dados</td></tr>";
         return;
       }
-
-      const chavesOrdenadas = Object.keys(dados).sort().reverse(); // do mais recente ao mais antigo
-
+      const chavesOrdenadas = Object.keys(dados).sort().reverse();
       chavesOrdenadas.forEach((key) => {
         const item = dados[key];
         const data = key.substring(0, 10);
@@ -87,9 +81,9 @@
           </tr>
         `;
       });
-
       tabela.innerHTML = html;
     });
   </script>
 </body>
 </html>
+
